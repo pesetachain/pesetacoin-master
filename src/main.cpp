@@ -1302,25 +1302,6 @@ unsigned int static GetNextWorkRequired_V2(const CBlockIndex* pindexLast, const 
         return KimotoGravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
 }
 
-
-unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
-{
-        int DiffMode = 1;
-        if (fTestNet) {
-                if (pindexLast->nHeight+1 >= 50) { DiffMode = 2; }
-                if (pindexLast->nHeight+1 >= 500) { DiffMode = 3; }
-        }
-        else { // CryptoMP - Kimoto Will Start at block 46.000
-                if (pindexLast->nHeight+1 >= 46000) { DiffMode = 2; }
-                if (pindexLast->nHeight+1 >= 582500) { DiffMode = 3; }
-        }
-        
-        if             (DiffMode == 1) { return GetNextWorkRequired_V1(pindexLast, pblock); }
-        else if        (DiffMode == 2) { return GetNextWorkRequired_V2(pindexLast, pblock); }
-        else if        (DiffMode == 3) { return DarkGravityWave(pindexLast, pblock); }
-        return GetNextWorkRequired_V2(pindexLast, pblock);
-}
-
 unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockHeader *pblock) {
 /* current difficulty formula, darkcoin - DarkGravity v3, written by Evan Duffield - evan@darkcoin.io */
 const CBlockIndex *BlockLastSolved = pindexLast;
@@ -1364,11 +1345,32 @@ for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
 	// Retarget
 	bnNew *= nActualTimespan;
 	bnNew /= _nTargetTimespan;
+	
 	if (bnNew > bnProofOfWorkLimit){
 		bnNew = bnProofOfWorkLimit;
 	}
 return bnNew.GetCompact();
 }
+
+unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+{
+        int DiffMode = 1;
+        if (fTestNet) {
+                if (pindexLast->nHeight+1 >= 50) { DiffMode = 2; }
+                if (pindexLast->nHeight+1 >= 500) { DiffMode = 3; }
+        }
+        else { // CryptoMP - Kimoto Will Start at block 46.000
+                if (pindexLast->nHeight+1 >= 46000) { DiffMode = 2; }
+                if (pindexLast->nHeight+1 >= 582500) { DiffMode = 3; }
+        }
+        
+        if             (DiffMode == 1) { return GetNextWorkRequired_V1(pindexLast, pblock); }
+        else if        (DiffMode == 2) { return GetNextWorkRequired_V2(pindexLast, pblock); }
+        else if        (DiffMode == 3) { return DarkGravityWave(pindexLast, pblock); }
+        return GetNextWorkRequired_V2(pindexLast, pblock);
+}
+
+
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits)
 {
